@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>assets\213079437.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="LICENSE.md" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="ClickableTransparentOverlay" Version="11.1.0" />
+	  <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<EmbeddedResource Include="assets\rules\*.json" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Content Include="assets\213079437.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="assets\fonts\Inter-VariableFont_opsz,wght.ttf" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Core\binds\KeyBind.cs" />
+	</ItemGroup>
+
+</Project>
