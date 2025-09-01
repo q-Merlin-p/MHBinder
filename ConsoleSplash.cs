@@ -32,7 +32,7 @@ namespace MajesticHub
             }
 
             Console.WriteLine($"MajesticHub v{AppInfo.Version} by Merlin @devxzcd");
-            Console.WriteLine("Repo: https://github.com/Majestic-HUB-Dev/MH-binder-WIN-C");
+            Console.WriteLine("Repo: https://github.com/Majestic-HUB-Dev/MHBinder");
             Console.WriteLine($"Press {MHbinder.Core.ConfigManager.OpenMenuKey} to open/close overlay\n");
         }
     }
