@@ -539,7 +539,7 @@ namespace MajesticHub
             ImGui.Separator();
             ImGui.Spacing();
 
-            string discordLink = "https://discord.gg/J5qUHAqw";
+            string discordLink = "https://discord.gg/VdmXeQax";
 
             ImGui.InputText("##discordLink", ref discordLink, 256, ImGuiInputTextFlags.ReadOnly);
 
