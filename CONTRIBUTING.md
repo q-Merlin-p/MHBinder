@@ -1,4 +1,4 @@
-# Лицензия на использование / Contribution Guide
+# Contribution Guide
 
 **Автор:** Majestic-HUB-Dev (q-Merlin-p)
 
