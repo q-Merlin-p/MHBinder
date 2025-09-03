@@ -53,11 +53,18 @@ public static class FrequentManager
     {
         var cfg = ConfigManager.LoadDictionary();
 
+        // удаляем все старые freq ключи
+        var keysToRemove = cfg.Keys.Where(k => k.StartsWith("freq")).ToList();
+        foreach (var key in keysToRemove)
+            cfg.Remove(key);
+
+        // добавляем актуальные
         foreach (var kvp in SaveToConfig())
             cfg[kvp.Key] = kvp.Value;
 
         ConfigManager.SaveDictionary(cfg);
     }
+
 
     public static void AddItem(string phrase)
     {

@@ -555,11 +555,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\MHbinder\\MHbinder.csproj",
+      "projectUniqueName": "D:\\MHbinder\\MHBinder\\MHbinder.csproj",
       "projectName": "MHbinder",
-      "projectPath": "D:\\MHbinder\\MHbinder.csproj",
+      "projectPath": "D:\\MHbinder\\MHBinder\\MHbinder.csproj",
       "packagesPath": "C:\\Users\\Wayne\\.nuget\\packages\\",
-      "outputPath": "D:\\MHbinder\\obj\\",
+      "outputPath": "D:\\MHbinder\\MHBinder\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\code\\vsSDKother\\NuGetPackages"

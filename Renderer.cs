@@ -41,6 +41,7 @@ namespace MajesticHub
         private bool _altTabHidden;
         private bool _themeApplied;
         private nint _hwnd;
+        private Dictionary<int, double> _hoverStart = new();
 
         // === Custom Tabs ===
         private enum Tab { Grammar, Rules, Forum, Logs, Binder, Other, Frequent }
@@ -246,7 +247,7 @@ namespace MajesticHub
 
             ImGui.Columns(1);
 
-            if (GhostButton("Проверить", new Vector2(140, 36)))
+            if (AccentGhostButton("Проверить", new Vector2(140, 36)))
             {
                 Task.Run(async () =>
                 {
@@ -260,9 +261,10 @@ namespace MajesticHub
                 });
             }
             ImGui.SameLine();
-            if (GhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_correctedText))
+            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_correctedText))
                 ImGui.SetClipboardText(_correctedText);
             ImGui.SameLine();
+
             if (DangerGhostButton("Очистить", new Vector2(140, 36)))
             {
                 _grammarText = "";
@@ -324,7 +326,7 @@ namespace MajesticHub
 
             ImGui.InputTextWithHint("##rulesQuery", "Введите ключевое слово...", ref _rulesQuery, 500);
             ImGui.SameLine();
-            if (GhostButton("Найти"))
+            if (AccentGhostButton("Найти"))
                 _rulesResult = RuleSearch.FindRule(_rulesQuery);
             ImGui.SameLine();
             if (DangerGhostButton("Очистить") && (!string.IsNullOrEmpty(_rulesQuery) || !string.IsNullOrEmpty(_rulesResult)))
@@ -385,7 +387,7 @@ namespace MajesticHub
 
             ImGui.Spacing();
 
-            if (GhostButton("Обработать", new Vector2(140, 36)))
+            if (AccentGhostButton("Обработать", new Vector2(140, 36)))
             {
                 try
                 {
@@ -399,7 +401,7 @@ namespace MajesticHub
             }
 
             ImGui.SameLine();
-            if (GhostButton("Копировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_forumOutput))
+            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_forumOutput))
                 ImGui.SetClipboardText(_forumOutput);
 
             ImGui.SameLine();
@@ -446,7 +448,7 @@ namespace MajesticHub
             ImGui.Columns(1);
             ImGui.Spacing();
 
-            if (GhostButton("Обработать", new Vector2(140, 36)))
+            if (AccentGhostButton("Обработать", new Vector2(140, 36)))
             {
                 var (results, errors) = LogStacker.Process(_logsInput);
                 if (errors.Count > 0)
@@ -466,7 +468,7 @@ namespace MajesticHub
             }
 
             ImGui.SameLine();
-            if (GhostButton("Копировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_logsOutput))
+            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_logsOutput))
                 ImGui.SetClipboardText(_logsOutput);
 
             ImGui.SameLine();
@@ -483,7 +485,13 @@ namespace MajesticHub
             ImGui.Text("Список биндов");
             ImGui.Separator();
 
-            ImGui.BeginChild("binder_scroll", new Vector2(0, 420), ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
+            // резервируем место под кнопку
+            float footerH = ImGui.GetFrameHeightWithSpacing() + 6f;
+
+            ImGui.BeginChild("binder_scroll",
+                new Vector2(0, -footerH),
+                ImGuiChildFlags.None,
+                ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
             int index = 0;
             foreach (var bind in BinderManager.Binds.ToList())
@@ -499,6 +507,26 @@ namespace MajesticHub
                     ConfigManager.Save();
                 }
 
+                if (ImGui.IsItemHovered())
+                {
+                    double now = ImGui.GetTime();
+                    if (!_hoverStart.ContainsKey(index * 2)) 
+                        _hoverStart[index * 2] = now;
+
+                    if (trigger.Length >= 40 && now - _hoverStart[index * 2] >= 1.0)
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.SetWindowFontScale(0.9f);
+                        ImGui.TextUnformatted(trigger.Replace(". ", ".\n"));
+                        ImGui.SetWindowFontScale(1.0f);
+                        ImGui.EndTooltip();
+                    }
+                }
+                else
+                {
+                    _hoverStart.Remove(index * 2);
+                }
+
                 ImGui.NextColumn();
 
                 string replace = bind.Replace ?? "";
@@ -508,9 +536,30 @@ namespace MajesticHub
                     ConfigManager.Save();
                 }
 
+                // tooltip для Текста
+                if (ImGui.IsItemHovered())
+                {
+                    double now = ImGui.GetTime();
+                    if (!_hoverStart.ContainsKey(index * 2 + 1))
+                        _hoverStart[index * 2 + 1] = now;
+
+                    if (replace.Length >= 40 && now - _hoverStart[index * 2 + 1] >= 1.0)
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.SetWindowFontScale(0.9f);
+                        ImGui.TextUnformatted(replace.Replace(". ", ".\n"));
+                        ImGui.SetWindowFontScale(1.0f);
+                        ImGui.EndTooltip();
+                    }
+                }
+                else
+                {
+                    _hoverStart.Remove(index * 2 + 1);
+                }
+
                 ImGui.Columns(1);
 
-                if (DangerGhostButton("Удалить", new Vector2(100, 28)))
+                if (DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
                 {
                     BinderManager.RemoveBind(bind);
                     ImGui.PopID();
@@ -524,14 +573,19 @@ namespace MajesticHub
 
             ImGui.EndChild();
 
-            ImGui.Spacing();
+            // футер с кнопкой
+            string addText = "Добавить бинд";
+            var style = ImGui.GetStyle();
+            float addW = ImGui.CalcTextSize(addText).X + style.FramePadding.X * 2f + 20f;
+            float addH = ImGui.GetFrameHeight();
 
-            if (PrimaryButton("Добавить бинд"))
+            if (AccentGhostButton(addText, new Vector2(addW, addH)))
             {
                 BinderManager.AddBind("", "");
                 ConfigManager.Save();
             }
         }
+
 
         private void DrawOther()
         {
@@ -543,7 +597,7 @@ namespace MajesticHub
 
             ImGui.InputText("##discordLink", ref discordLink, 256, ImGuiInputTextFlags.ReadOnly);
 
-            if (ImGui.Button("Скопировать ссылку", new Vector2(200, 36)))
+            if (AccentGhostButton("Скопировать ссылку", new Vector2(200, 36)))
             {
                 ImGui.SetClipboardText(discordLink);
                 AlertManager.ShowAlert("Успешно скопированно в буфер обмена");
@@ -558,7 +612,14 @@ namespace MajesticHub
             ImGui.Separator();
             ImGui.Spacing();
 
-            ImGui.BeginChild("frequent_scroll", new Vector2(0, 500), ImGuiChildFlags.None, ImGuiWindowFlags.AlwaysVerticalScrollbar);
+            // место под кнопку внизу (высота строки + отступ)
+            float footerH = ImGui.GetFrameHeightWithSpacing() + 6f;
+
+            // скролл-зона занимает весь остаток окна, минус footerH
+            ImGui.BeginChild("frequent_scroll",
+                new Vector2(0, -footerH),
+                ImGuiChildFlags.None,
+                ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
             int index = 0;
             foreach (var item in FrequentManager.Items.ToList())
@@ -568,25 +629,45 @@ namespace MajesticHub
                 string phrase = item.Phrase;
                 if (ImGui.InputText($"##phrase{index}", ref phrase, 1024))
                 {
-                    item.Phrase = phrase; 
-                    FrequentManager.Save(); 
+                    item.Phrase = phrase;
+                    FrequentManager.Save();
+                }
+
+                // tooltip с задержкой и порогом длины
+                if (ImGui.IsItemHovered())
+                {
+                    double now = ImGui.GetTime();
+                    if (!_hoverStart.ContainsKey(index)) _hoverStart[index] = now;
+
+                    if (item.Phrase.Length >= 78 && now - _hoverStart[index] >= 1.0)
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.SetWindowFontScale(0.9f);
+                        ImGui.TextUnformatted(item.Phrase.Replace(". ", ".\n"));
+                        ImGui.SetWindowFontScale(1.0f);
+                        ImGui.EndTooltip();
+                    }
+                }
+                else
+                {
+                    _hoverStart.Remove(index);
                 }
 
                 ImGui.SameLine();
-
-                if (ImGui.Button("Скопировать", new Vector2(120, 28)))
+                if (InfoGhostButton("Скопировать", new Vector2(120, ImGui.GetFrameHeight())))
                 {
                     ImGui.SetClipboardText(item.Phrase);
                     AlertManager.ShowAlert("Фраза скопирована в буфер обмена!");
                 }
 
                 ImGui.SameLine();
-
-                if (DangerGhostButton("Удалить", new Vector2(100, 28)))
+                if (DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
                 {
                     FrequentManager.RemoveItem(item);
                     ImGui.PopID();
+                    FrequentManager.Save();
                     break;
+
                 }
 
                 ImGui.Spacing();
@@ -594,12 +675,17 @@ namespace MajesticHub
                 index++;
             }
 
-            ImGui.EndChild();
+            ImGui.EndChild(); // <- список всегда внутри скролла
+                              // футер (кнопка всегда видна, т.к. мы оставили под неё место)
+            string addText = "Добавить фразу";
+            var style = ImGui.GetStyle();
+            float addW = ImGui.CalcTextSize(addText).X + style.FramePadding.X * 2f + 20f;
+            float addH = ImGui.GetFrameHeight();
 
-            if (PrimaryButton("Добавить фразу"))
+            if (AccentGhostButton(addText, new Vector2(addW, addH)))
                 FrequentManager.AddItem("");
-        }
 
+        }
 
 
         public void DrawAllertPopup()
@@ -692,13 +778,34 @@ namespace MajesticHub
             return pressed;
         }
 
-        private bool PillButton(string text)
+        private bool InfoGhostButton(string text, Vector2? size = null)
         {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 100f);
-            bool p = GhostButton(text, new Vector2(160, 28));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
+            var info = new Vector4(0.25f, 0.55f, 0.95f, 1f); // синий
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, info * new Vector4(1, 1, 1, 0.15f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, info * new Vector4(1, 1, 1, 0.25f));
+            ImGui.PushStyleColor(ImGuiCol.Border, info);
+            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
+            ImGui.PopStyleColor(4);
             ImGui.PopStyleVar();
-            return p;
+            return pressed;
         }
+
+        private bool AccentGhostButton(string text, Vector2? size = null)
+        {
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
+            var accent = _accent; // тот самый розово-фиолетовый цвет
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, accent * new Vector4(1, 1, 1, 0.15f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, accent * new Vector4(1, 1, 1, 0.25f));
+            ImGui.PushStyleColor(ImGuiCol.Border, accent);
+            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
+            ImGui.PopStyleColor(4);
+            ImGui.PopStyleVar();
+            return pressed;
+        }
+
 
         private void ApplyMajesticTheme()
         {
@@ -734,12 +841,13 @@ namespace MajesticHub
             style.FrameRounding = 12f;
             style.GrabRounding = 12f;
 
-            style.FramePadding = new Vector2(14, 8);
+            style.FramePadding = new Vector2(12, 6);   // меньше по Y
+            style.ButtonTextAlign = new Vector2(0.5f, 0.5f); // центрирование
             style.ItemSpacing = new Vector2(18, 14);
             style.ScrollbarSize = 18f;
 
             style.WindowTitleAlign = new Vector2(0.5f, 0.5f);
-            style.ButtonTextAlign = new Vector2(0.5f, 0.5f);
+            //style.ButtonTextAlign = new Vector2(0.5f, 0.5f);
 
             // === Грузим шрифт ===
             var io = ImGui.GetIO();

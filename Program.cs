@@ -12,7 +12,7 @@ namespace MajesticHub
     {
         public static class AppInfo
         {
-            public const string Version = "1.1.1 DEV";
+            public const string Version = "1.2.1 DEV";
         }
 
         static void Main(string[] args)
