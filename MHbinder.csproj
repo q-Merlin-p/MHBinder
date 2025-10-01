@@ -35,4 +35,8 @@
 	  <None Include="Core\binds\KeyBind.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="assets\rules\" />
+	</ItemGroup>
+
 </Project>

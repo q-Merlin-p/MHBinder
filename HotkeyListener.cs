@@ -73,7 +73,7 @@ namespace MHbinder.Core
                     Console.WriteLine($"[KeyBind Triggered] {bind.Trigger} -> {bind.Replace}");
 
                     ClipboardHelper.SetText(bind.Replace);
-                    MajesticHub.AlertManager.ShowAlert("Успешно скопированно в буфер обмена");
+                    MHbinder.AlertManager.ShowAlert("Успешно скопированно в буфер обмена");
                     break;
                 }
             }

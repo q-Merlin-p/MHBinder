@@ -1,7 +1,7 @@
 ﻿using System;
-using static MajesticHub.Program;
+using static MHbinder.Program;
 
-namespace MajesticHub
+namespace MHbinder
 {
     public static class ConsoleSplash
     {
@@ -31,7 +31,7 @@ namespace MajesticHub
                 Console.WriteLine($"\u001b[38;2;{r};{g};{b}m{logo[i]}\u001b[0m");
             }
 
-            Console.WriteLine($"MajesticHub v{AppInfo.Version} by Merlin @devxzcd");
+            Console.WriteLine($"MHbinder v{AppInfo.Version} by Merlin @devxzcd");
             Console.WriteLine("Repo: https://github.com/Majestic-HUB-Dev/MHBinder");
             Console.WriteLine($"Press {MHbinder.Core.ConfigManager.OpenMenuKey} to open/close overlay\n");
         }

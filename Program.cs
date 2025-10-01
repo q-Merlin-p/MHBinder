@@ -1,18 +1,19 @@
 ﻿using ImGuiNET;
-using MajesticHub.Core.binds;
+using MHbinder.Core.binds;
 using MHbinder.Core;
+using MHbinder.Core.UI;
 using System;
 using System.Reflection;
 using System.Threading;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace MajesticHub
+namespace MHbinder
 {
     internal static class Program
     {
         public static class AppInfo
         {
-            public const string Version = "1.2.1 DEV";
+            public const string Version = "1.3.0 DEV";
         }
 
         static void Main(string[] args)
@@ -29,7 +30,7 @@ namespace MajesticHub
                 Console.WriteLine(res);
             Console.WriteLine("==========================");
 
-            renderer.ApplyTheme();
+            MHbinder.Core.UI.ThemeManager.LoadFonts();
 
             ConfigManager.Load();
             HotkeyListener.LoadConfigKey(ConfigManager.OpenMenuKey);

@@ -1,5 +1,7 @@
-﻿using MajesticHub.Core.binds;
+﻿using MHbinder;
 using MHbinder.Core.binds;
+using MHbinder.Core.binds;
+using MHbinder.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +14,13 @@ namespace MHbinder.Core
         private static readonly string ConfigPath = Path.Combine(ConfigDir, "default.ini");
 
         public static string OpenMenuKey { get; private set; } = "RightShift";
+
+        // Сохраняем текущую тему
+        public static ThemeType Theme { get; private set; }
+
         public static List<BinderItem> Binds => BinderManager.Binds;
         public static List<FrequentManager.FrequentItem> FrequentItems => FrequentManager.Items;
+        
 
         public static void Load()
         {
@@ -24,6 +31,23 @@ namespace MHbinder.Core
 
             if (cfg.TryGetValue("openMenu", out var key))
                 OpenMenuKey = key;
+
+            if (cfg.TryGetValue("theme", out var themeStr) && Enum.TryParse(themeStr, out ThemeType loadedTheme))
+                Theme = loadedTheme;
+
+            // Применяем тему после загрузки
+            ThemeManager.ApplyTheme(Theme);
+        }
+
+        public static void SetTheme(ThemeType theme)
+        {
+            Theme = theme;
+            ThemeManager.ApplyTheme(theme);
+
+            // Сохраняем тему в конфиг
+            var cfg = LoadDictionary();
+            cfg["theme"] = theme.ToString();
+            SaveDictionary(cfg);
         }
 
         public static Dictionary<string, string> LoadDictionary()
@@ -54,6 +78,7 @@ namespace MHbinder.Core
             using var writer = new StreamWriter(ConfigPath, false);
 
             writer.WriteLine($"openMenu = {OpenMenuKey}");
+            writer.WriteLine($"theme = {Theme}");
 
             var bindCfg = BinderManager.SaveToConfig();
             foreach (var kv in bindCfg)

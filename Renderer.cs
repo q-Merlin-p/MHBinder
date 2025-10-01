@@ -1,7 +1,8 @@
 ﻿using ClickableTransparentOverlay;
 using ImGuiNET;
-using MajesticHub.Core.binds;
+using MHbinder.Core.binds;
 using MHbinder.Core;
+using MHbinder.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,19 +13,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MajesticHub
+namespace MHbinder
 {
     public class Renderer : Overlay
     {
 
+        public ThemeType _currentTheme;
 
-        public void ApplyTheme()
-        {
-            ApplyMajesticTheme();
-            _themeApplied = true;
-        }
-
-        static string ExtractResourceToFile(string resourceName, string fileName)
+        public static string ExtractResourceToFile(string resourceName, string fileName)
         {
             var asm = Assembly.GetExecutingAssembly();
             using var stream = asm.GetManifestResourceStream(resourceName)
@@ -34,8 +30,6 @@ namespace MajesticHub
             File.WriteAllBytes(fileName, ms.ToArray());
             return fileName;
         }
-
-
 
         private bool _menuOpen;
         private bool _altTabHidden;
@@ -83,7 +77,13 @@ namespace MajesticHub
             "Overlay",
             GetSystemMetrics(0),
             GetSystemMetrics(1))
-        { }
+
+        {
+            ConfigManager.Load();
+
+            // Берём тему из конфига
+            _currentTheme = ConfigManager.Theme;
+        }
 
         protected override void Render()
         {
@@ -99,7 +99,7 @@ namespace MajesticHub
 
             if (!_themeApplied)
             {
-                ApplyMajesticTheme();
+                ThemeManager.ApplyTheme(_currentTheme);
                 _themeApplied = true;
             }
 
@@ -117,7 +117,7 @@ namespace MajesticHub
 
             ImGui.SetNextWindowPos(new Vector2(150, 80), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSize(new Vector2(980, 650), ImGuiCond.FirstUseEver);
-            ImGui.Begin("MajesticHub",
+            ImGui.Begin("MHbinder",
                 ImGuiWindowFlags.NoTitleBar |
                 ImGuiWindowFlags.NoCollapse |
                 ImGuiWindowFlags.NoScrollbar
@@ -247,7 +247,7 @@ namespace MajesticHub
 
             ImGui.Columns(1);
 
-            if (AccentGhostButton("Проверить", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton("Проверить", new Vector2(140, 36)))
             {
                 Task.Run(async () =>
                 {
@@ -261,11 +261,11 @@ namespace MajesticHub
                 });
             }
             ImGui.SameLine();
-            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_correctedText))
+            if (MHbinder.Core.UI.Style.InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_correctedText))
                 ImGui.SetClipboardText(_correctedText);
             ImGui.SameLine();
 
-            if (DangerGhostButton("Очистить", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.DangerGhostButton("Очистить", new Vector2(140, 36)))
             {
                 _grammarText = "";
                 _correctedText = "";
@@ -326,10 +326,10 @@ namespace MajesticHub
 
             ImGui.InputTextWithHint("##rulesQuery", "Введите ключевое слово...", ref _rulesQuery, 500);
             ImGui.SameLine();
-            if (AccentGhostButton("Найти"))
+            if (MHbinder.Core.UI.Style.AccentGhostButton("Найти"))
                 _rulesResult = RuleSearch.FindRule(_rulesQuery);
             ImGui.SameLine();
-            if (DangerGhostButton("Очистить") && (!string.IsNullOrEmpty(_rulesQuery) || !string.IsNullOrEmpty(_rulesResult)))
+            if (MHbinder.Core.UI.Style.DangerGhostButton("Очистить") && (!string.IsNullOrEmpty(_rulesQuery) || !string.IsNullOrEmpty(_rulesResult)))
             {
                 _rulesQuery = "";
                 _rulesResult = "";
@@ -387,7 +387,7 @@ namespace MajesticHub
 
             ImGui.Spacing();
 
-            if (AccentGhostButton("Обработать", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton("Обработать", new Vector2(140, 36)))
             {
                 try
                 {
@@ -401,11 +401,11 @@ namespace MajesticHub
             }
 
             ImGui.SameLine();
-            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_forumOutput))
+            if (MHbinder.Core.UI.Style.InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_forumOutput))
                 ImGui.SetClipboardText(_forumOutput);
 
             ImGui.SameLine();
-            if (DangerGhostButton("Очистить", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.DangerGhostButton("Очистить", new Vector2(140, 36)))
             {
                 _forumInput = "";
                 _forumOutput = "";
@@ -448,7 +448,7 @@ namespace MajesticHub
             ImGui.Columns(1);
             ImGui.Spacing();
 
-            if (AccentGhostButton("Обработать", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton("Обработать", new Vector2(140, 36)))
             {
                 var (results, errors) = LogStacker.Process(_logsInput);
                 if (errors.Count > 0)
@@ -468,11 +468,11 @@ namespace MajesticHub
             }
 
             ImGui.SameLine();
-            if (InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_logsOutput))
+            if (MHbinder.Core.UI.Style.InfoGhostButton("Скопировать", new Vector2(140, 36)) && !string.IsNullOrEmpty(_logsOutput))
                 ImGui.SetClipboardText(_logsOutput);
 
             ImGui.SameLine();
-            if (DangerGhostButton("Очистить", new Vector2(140, 36)))
+            if (MHbinder.Core.UI.Style.DangerGhostButton("Очистить", new Vector2(140, 36)))
             {
                 _logsInput = "";
                 _logsOutput = "";
@@ -559,7 +559,7 @@ namespace MajesticHub
 
                 ImGui.Columns(1);
 
-                if (DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
+                if (MHbinder.Core.UI.Style.DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
                 {
                     BinderManager.RemoveBind(bind);
                     ImGui.PopID();
@@ -579,14 +579,14 @@ namespace MajesticHub
             float addW = ImGui.CalcTextSize(addText).X + style.FramePadding.X * 2f + 20f;
             float addH = ImGui.GetFrameHeight();
 
-            if (AccentGhostButton(addText, new Vector2(addW, addH)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton(addText, new Vector2(addW, addH)))
             {
                 BinderManager.AddBind("", "");
                 ConfigManager.Save();
             }
         }
 
-
+        
         private void DrawOther()
         {
             ImGui.Text("Важное и не очень:");
@@ -594,16 +594,27 @@ namespace MajesticHub
             ImGui.Spacing();
 
             string discordLink = "https://discord.gg/VdmXeQax";
-
             ImGui.InputText("##discordLink", ref discordLink, 256, ImGuiInputTextFlags.ReadOnly);
 
-            if (AccentGhostButton("Скопировать ссылку", new Vector2(200, 36)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton("Скопировать ссылку", new Vector2(200, 36)))
             {
                 ImGui.SetClipboardText(discordLink);
                 AlertManager.ShowAlert("Успешно скопированно в буфер обмена");
             }
 
+            ImGui.Spacing();
+            ImGui.Text("Тема приложения:");
 
+            // Combo для выбора темы
+            string[] themeNames = Enum.GetNames(typeof(ThemeType));
+            int currentIndex = (int)_currentTheme;
+            if (ImGui.Combo("##ThemeSelector", ref currentIndex, themeNames, themeNames.Length))
+            {
+                _currentTheme = (ThemeType)currentIndex;
+                MHbinder.Core.UI.ThemeManager.ApplyTheme(_currentTheme);
+            }
+            ConfigManager.SetTheme(_currentTheme);
+            ConfigManager.Save();
         }
 
         private void DrawFrequent()
@@ -654,14 +665,14 @@ namespace MajesticHub
                 }
 
                 ImGui.SameLine();
-                if (InfoGhostButton("Скопировать", new Vector2(120, ImGui.GetFrameHeight())))
+                if (MHbinder.Core.UI.Style.InfoGhostButton("Скопировать", new Vector2(120, ImGui.GetFrameHeight())))
                 {
                     ImGui.SetClipboardText(item.Phrase);
                     AlertManager.ShowAlert("Фраза скопирована в буфер обмена!");
                 }
 
                 ImGui.SameLine();
-                if (DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
+                if (MHbinder.Core.UI.Style.DangerGhostButton("Удалить", new Vector2(100, ImGui.GetFrameHeight())))
                 {
                     FrequentManager.RemoveItem(item);
                     ImGui.PopID();
@@ -682,7 +693,7 @@ namespace MajesticHub
             float addW = ImGui.CalcTextSize(addText).X + style.FramePadding.X * 2f + 20f;
             float addH = ImGui.GetFrameHeight();
 
-            if (AccentGhostButton(addText, new Vector2(addW, addH)))
+            if (MHbinder.Core.UI.Style.AccentGhostButton(addText, new Vector2(addW, addH)))
                 FrequentManager.AddItem("");
 
         }
@@ -739,126 +750,6 @@ namespace MajesticHub
         {
             ImGui.PopStyleVar(3);
             ImGui.PopStyleColor(2);
-        }
-
-        private bool PrimaryButton(string text, Vector2? size = null)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Button, _accent);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, _accentHover);
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, _accentActive);
-            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
-            ImGui.PopStyleColor(3);
-            return pressed;
-        }
-
-        private bool GhostButton(string text, Vector2? size = null)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, _accent * new Vector4(1, 1, 1, 0.2f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, _accent * new Vector4(1, 1, 1, 0.3f));
-            ImGui.PushStyleColor(ImGuiCol.Border, _accent * new Vector4(1, 1, 1, 0.6f));
-            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
-            ImGui.PopStyleColor(4);
-            ImGui.PopStyleVar();
-            return pressed;
-        }
-
-        private bool DangerGhostButton(string text, Vector2? size = null)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
-            var danger = new Vector4(0.95f, 0.25f, 0.35f, 1f);
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, danger * new Vector4(1, 1, 1, 0.15f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, danger * new Vector4(1, 1, 1, 0.25f));
-            ImGui.PushStyleColor(ImGuiCol.Border, danger);
-            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
-            ImGui.PopStyleColor(4);
-            ImGui.PopStyleVar();
-            return pressed;
-        }
-
-        private bool InfoGhostButton(string text, Vector2? size = null)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
-            var info = new Vector4(0.25f, 0.55f, 0.95f, 1f); // синий
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, info * new Vector4(1, 1, 1, 0.15f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, info * new Vector4(1, 1, 1, 0.25f));
-            ImGui.PushStyleColor(ImGuiCol.Border, info);
-            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
-            ImGui.PopStyleColor(4);
-            ImGui.PopStyleVar();
-            return pressed;
-        }
-
-        private bool AccentGhostButton(string text, Vector2? size = null)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1f);
-            var accent = _accent; // тот самый розово-фиолетовый цвет
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, accent * new Vector4(1, 1, 1, 0.15f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, accent * new Vector4(1, 1, 1, 0.25f));
-            ImGui.PushStyleColor(ImGuiCol.Border, accent);
-            bool pressed = ImGui.Button(text, size ?? new Vector2(120, 35));
-            ImGui.PopStyleColor(4);
-            ImGui.PopStyleVar();
-            return pressed;
-        }
-
-
-        private void ApplyMajesticTheme()
-        {
-            var style = ImGui.GetStyle();
-            var colors = style.Colors;
-
-            _accent = new Vector4(0.95f, 0.15f, 0.55f, 1.0f);
-            _accentHover = new Vector4(1f, 0.25f, 0.65f, 1.0f);
-            _accentActive = new Vector4(0.75f, 0.05f, 0.40f, 1.0f);
-
-            colors[(int)ImGuiCol.Text] = new Vector4(0.95f, 0.95f, 0.97f, 1.0f);
-            colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.55f, 0.58f, 0.60f, 1.0f);
-
-            colors[(int)ImGuiCol.WindowBg] = new Vector4(0.08f, 0.08f, 0.10f, 1.0f);
-            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.10f, 0.10f, 0.12f, 1.0f);
-            colors[(int)ImGuiCol.PopupBg] = new Vector4(0.10f, 0.10f, 0.12f, 1.0f);
-
-            colors[(int)ImGuiCol.Border] = new Vector4(0.28f, 0.28f, 0.33f, 1.0f);
-
-            colors[(int)ImGuiCol.Button] = _accent;
-            colors[(int)ImGuiCol.ButtonHovered] = _accentHover;
-            colors[(int)ImGuiCol.ButtonActive] = _accentActive;
-
-            colors[(int)ImGuiCol.FrameBg] = new Vector4(0.15f, 0.15f, 0.18f, 1.0f);
-            colors[(int)ImGuiCol.FrameBgHovered] = _accentHover * new Vector4(1, 1, 1, 0.6f);
-            colors[(int)ImGuiCol.FrameBgActive] = _accentActive;
-
-            colors[(int)ImGuiCol.Header] = new Vector4(0.18f, 0.18f, 0.21f, 1.0f);
-            colors[(int)ImGuiCol.HeaderHovered] = _accentHover * new Vector4(1, 1, 1, 0.35f);
-            colors[(int)ImGuiCol.HeaderActive] = _accentActive;
-
-            style.WindowRounding = 16f;
-            style.FrameRounding = 12f;
-            style.GrabRounding = 12f;
-
-            style.FramePadding = new Vector2(12, 6);   // меньше по Y
-            style.ButtonTextAlign = new Vector2(0.5f, 0.5f); // центрирование
-            style.ItemSpacing = new Vector2(18, 14);
-            style.ScrollbarSize = 18f;
-
-            style.WindowTitleAlign = new Vector2(0.5f, 0.5f);
-            //style.ButtonTextAlign = new Vector2(0.5f, 0.5f);
-
-            // === Грузим шрифт ===
-            var io = ImGui.GetIO();
-            io.Fonts.Clear();
-
-            string interPath = ExtractResourceToFile(
-                "MHbinder.assets.fonts.Inter-VariableFont_opsz,wght.ttf",
-                "Inter.ttf");
-
-            io.Fonts.AddFontFromFileTTF(interPath, 18.0f, null, io.Fonts.GetGlyphRangesCyrillic());
-            io.Fonts.Build();
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]

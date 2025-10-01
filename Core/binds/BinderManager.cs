@@ -4,7 +4,7 @@ using MHbinder.Core.binds;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MajesticHub.Core.binds
+namespace MHbinder.Core.binds
 {
     public static class BinderManager
     {

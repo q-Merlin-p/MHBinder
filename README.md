@@ -5,7 +5,7 @@
 📂 Архитектура проекта (устарела)
 
 ```md
-MajesticHub/
+MHbinder/
 │   Program.cs              # Точка входа
 │   Renderer.cs              # Логика ImGui overlay
 │   HotkeyListener.cs       # Ловим RightShift и открываем меню

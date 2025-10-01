@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using ClickableTransparentOverlay;
 
-namespace MajesticHub;
+namespace MHbinder;
 
 public static class WindowUtils
 {
