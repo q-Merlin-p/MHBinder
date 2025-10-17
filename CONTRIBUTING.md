@@ -1,6 +1,6 @@
 # Contribution Guide
 
-**Автор:** Majestic-HUB-Dev (q-Merlin-p)
+**Автор:** q-Merlin-p
 
 **Проект:** MHBinder
 
